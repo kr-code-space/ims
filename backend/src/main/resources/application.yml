@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: ims-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/imsdb}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:imsuser}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

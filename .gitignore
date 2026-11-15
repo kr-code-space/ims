@@ -1,0 +1,55 @@
+
+# =========================
+# Maven installation
+# =========================
+apache-maven-*/
+apache-maven-*.zip
+
+# =========================
+# Java / Spring Boot
+# =========================
+target/
+*.class
+*.jar
+*.war
+
+# =========================
+# Frontend / Node
+# =========================
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# IDE
+# =========================
+.idea/
+.vscode/
+*.iml
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Database backups
+# =========================
+*.dump
+*.sql.backup
