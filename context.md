@@ -1,5 +1,88 @@
 # Institute Management System (IMS)
 
+> **Implementation status reviewed: 2026-11-16.** This document describes both the intended IMS scope and the current code. The role and module descriptions below are requirements, not a claim that those workflows are already implemented.
+
+## Current Implementation Snapshot
+
+The repository is a working full-stack starting point, not yet a complete Institute Management System.
+
+### Working now
+
+- React/Vite frontend and Spring Boot backend can run locally against PostgreSQL.
+- Database-backed login uses Spring Security HTTP Basic and BCrypt password hashes.
+- An initial administrator can be seeded from environment variables.
+- Admins can view and create user accounts, enable/disable accounts, reset another user's password, and change faculty permissions through a database-backed API and screen.
+- Admins have a working Student Management screen and database-backed API to list, add, edit, search, activate, and deactivate student records.
+- The Admin User Management screen supports account search/creation, enable/disable, faculty `LAB_ACCESS` changes, and temporary password resets. It prevents the current admin from disabling or resetting their own account.
+- Creating a student can optionally create a linked `STUDENT` login. Deactivating that record also disables its linked login. Student records are deactivated rather than deleted, so related history is not removed.
+- Hibernate updates the current database schema from the JPA entities at application startup.
+- Six unit tests cover student account creation/password hashing, rejection of incomplete optional login details, student deactivation, user listing, safe account status changes, and password reset hashing/self-reset protection.
+
+### Not a complete implementation yet
+
+- The dashboards for Faculty, Student, and Librarian are informational placeholders. Other than the Admin Students and Users pages, there are no operational module screens.
+- Several academic records have JPA entities and repositories, but do not yet have working APIs, services, validation workflows, or frontend pages.
+- Library, forum, laboratory inventory, facilities, staff, and audit-log workflows have not been implemented.
+- No production deployment configuration, database migration history, payment integration, or end-to-end UI/API tests are present.
+
+### Current API surface
+
+| Endpoint | Current behavior |
+| --- | --- |
+| `GET /api/health` | Public backend health check. |
+| `POST /api/auth/login` | Accepts JSON username/password and returns the authenticated username and authorities. |
+| `GET /api/auth/me` | Returns the current authenticated username and authorities. |
+| `GET /api/admin/overview` | Admin-only placeholder overview; does not return real metrics. |
+| `GET /api/admin/users` | Admin-only account list; responses do not include password hashes. |
+| `POST /api/admin/users` | Admin-only creation of a user account. Passwords must be 12-72 characters. |
+| `PUT /api/admin/users/{userId}/permissions` | Admin-only permission update; additional permissions are currently supported only for faculty (`LAB_ACCESS`). |
+| `PUT /api/admin/users/{userId}/status` | Admin-only enable/disable; the current admin cannot disable their own account. |
+| `PUT /api/admin/users/{userId}/password` | Admin-only password reset for another user; hashes with BCrypt and blocks resetting the current admin's password. |
+| `GET /api/admin/students` | Admin-only list of student records. |
+| `POST /api/admin/students` | Admin-only student creation; may also create a linked student login. |
+| `PUT /api/admin/students/{id}` | Admin-only update of student record fields. |
+| `PUT /api/admin/students/{id}/status` | Admin-only activation/deactivation; also enables/disables its linked login. |
+| `GET /api/faculty/overview`, `GET /api/student/overview`, `GET /api/librarian/overview` | Role-protected placeholder responses, not functional module data. |
+| `GET /api/faculty/lab-access` | Faculty with `LAB_ACCESS` only; still a placeholder with no laboratory records. |
+
+User roles are assigned at account creation and cannot yet be changed through the API. There is no self-service password/profile page. The login API does not issue JWTs.
+
+### Existing persistence model
+
+The JPA model currently declares:
+
+- `ims_users` and `ims_user_permissions`: users, roles, enabled status, BCrypt password hashes, and permissions.
+- `students`: student number, name, department, year, class name, active status, and an optional one-to-one user account.
+- `faculty`: employee number, name, department, designation, and an optional user account.
+- `subjects`: subject code, name, department, credits, and semester.
+- `attendance_records`: student, subject, date, attendance result, and remarks.
+- `assignments` and `submissions`: assignment details and student submission/evaluation fields.
+- `fee_records`: student, fee type, amounts, status, and due date.
+
+Except for user provisioning and Student Management, these are data-model scaffolds: their repositories exist, but there are no corresponding business workflows or CRUD APIs. There are no current entities for classes/enrolments, staff, library, forum, lab equipment, facilities, or audit logs.
+
+### Development configuration and verification
+
+- Backend: Java source/target 17, Spring Boot 3.3.5, Maven, PostgreSQL, Spring Data JPA/Hibernate.
+- Frontend: React 19, Vite 8, React Router, Axios, Lucide icons, and plain CSS. Tailwind is not installed.
+- The frontend API base URL is currently hard-coded as `http://localhost:8080/api`.
+- Local CORS allows `http://localhost:5173` and `http://127.0.0.1:5173`.
+- Database defaults in `backend/src/main/resources/application.yml`: `jdbc:postgresql://localhost:5432/imsdb`, username `imsuser`, and password from `DB_PASSWORD`. `DB_URL`, `DB_USERNAME`, and `DDL_AUTO` can override the defaults. PostgreSQL itself and the `imsdb` database/`imsuser` role must already exist; Hibernate creates/updates application tables, not the database or PostgreSQL role.
+- The initial admin seeder reads `IMS_BOOTSTRAP_ADMIN_USERNAME`, `IMS_BOOTSTRAP_ADMIN_PASSWORD`, `IMS_BOOTSTRAP_ADMIN_FIRST_NAME`, `IMS_BOOTSTRAP_ADMIN_LAST_NAME`, and `IMS_BOOTSTRAP_ADMIN_EMAIL`. It creates an admin only when all are set and that username does not already exist. It does not reset an existing user's password. Bootstrap passwords must be 12-72 characters.
+- The frontend keeps the authenticated API client in memory, not as a persistent token/session. Refreshing the page requires signing in again.
+- The frontend exposes the Admin Students and Users pages; other roles still see dashboard placeholders. A user whose password was reset must sign in again using the new password.
+- Local startup from the repository root: `.\apache-maven-3.9.11\bin\mvn.cmd -f backend\pom.xml spring-boot:run`; in `frontend`, use `npm run dev`. The Maven path is specific to machines with that local Maven folder; an installed Maven can be used instead.
+- Latest checks: `mvn -f backend/pom.xml test` passes (6 tests); frontend `npm run build` and `npm run lint` pass.
+
+### Recommended next work
+
+1. Implement academic structure (departments, classes, terms/semesters, subject offerings, enrolment, and faculty/class assignment). This is the foundation for meaningful class-scoped permissions and for connecting existing student records to actual classes.
+2. Implement Faculty Management using database-backed staff/user records, then Attendance and Assignments/Submissions using those academic relationships.
+3. Implement fee structures, dues, payment recording, and receipts; choose and document any payment-provider integration before implementing real online payments.
+4. Implement student self-service (profile, subjects, attendance, assignment submission/results, and fees), then the class forum and CR-specific moderation.
+5. Implement Library and circulation workflows, Lab inventory/maintenance, Facilities, and Audit Logs.
+6. Add integration/API and end-to-end tests, database migrations, deployment configuration, and production security hardening.
+
 ## Project Overview, Technology Stack & Architecture
 
 ## 1. Project Overview
@@ -125,9 +208,9 @@ CR is an additional responsibility assigned to a student by Admin; it is not a s
 
 Other possible areas include examinations/results, timetable, announcements, leave management, reports, and multi-institute support.
 
-## 4. Technology Stack
+## 4. Intended Technology Stack
 
-The intended technology stack is:
+The table below describes the target stack. The current implementation differs in the places called out above: it uses plain CSS rather than Tailwind, Hibernate schema updates rather than Flyway migrations, and HTTP Basic rather than JWT.
 
 | Layer                | Technology                  | Role                                                                 |
 | -------------------- | --------------------------- | -------------------------------------------------------------------- |
@@ -166,6 +249,8 @@ This means:
 
 ### 5.2 High-Level Architecture
 
+The following diagram is the target architecture. Several modules shown in it are not implemented yet.
+
 ```text
 ┌──────────────────────────────────────────────┐
 │               FRONTEND                       │
@@ -202,8 +287,7 @@ This means:
 │  Forum | Facilities | Audit Records          │
 └──────────────────────────────────────────────┘
 
-             Flyway
-   Versioned database migrations
+    Planned: versioned migrations
 ```
 
 ### 5.3 Backend Internal Structure
@@ -260,7 +344,7 @@ ims/
                     └── migration/
 ```
 
-This is a proposed organisation; modules can be added as the corresponding functionality is developed.
+This is a proposed organisation; modules can be added as the corresponding functionality is developed. The current backend has Java packages for controllers, config, users, students, faculty, subjects, attendance, assignments, and fees, but several of these currently contain only entities and repositories.
 
 ### 5.5 Proposed Frontend Folder Structure
 
@@ -288,9 +372,11 @@ ims/
         └── main.jsx
 ```
 
-The frontend is organised by feature and role, with shared components, routing, authentication state, and API services.
+This is a proposed frontend structure, not the current layout. The current frontend is a small `App.jsx`/`App.css` application with login, role dashboard placeholders, and the Admin Student Management screen; it does not yet have separate feature pages, shared API services, or complete role workflows.
 
 ## 6. Security and Data Access Model
+
+This section defines the intended access policy. In the current code, HTTP Basic authentication and role checks are applied to the APIs that exist; fine-grained class/subject scoping, CR permissions, and most module-specific authorization cannot be implemented until those workflows and relationships exist.
 
 The system is based on role-based and permission-based access control.
 
@@ -307,7 +393,7 @@ The system is based on role-based and permission-based access control.
 
 ## 7. Data and Persistence Concepts
 
-PostgreSQL stores the system's persistent records. Spring Data JPA and Hibernate provide object-relational data access, while Flyway manages database schema migrations.
+PostgreSQL stores the system's persistent records. Spring Data JPA and Hibernate provide object-relational data access. **Currently Hibernate uses `ddl-auto: update`** to create/update tables from the entities; Flyway is only a target choice and is not included in the dependencies. `ddl-auto: update` is convenient for local development but should be replaced by reviewed, versioned migrations before production use.
 
 The data model should distinguish:
 
@@ -325,4 +411,6 @@ Multi-institute support would require institute-level data separation and decisi
 
 ## 9. Project Description
 
-**Institute Management System (IMS)** is a full-stack, role-based institutional management application built with Java, Spring Boot, React, and PostgreSQL. It is intended to centralise student and staff records, academic activities, attendance, assignments, fees, library and laboratory operations, facilities, and student support workflows. Its modular monolithic backend exposes REST APIs to a React frontend and uses role- and permission-based access to provide separate functionality for Admin, Faculty, Students, and Librarians.
+**Target description:** Institute Management System (IMS) is intended to be a full-stack, role-based institutional management application built with Java, Spring Boot, React, and PostgreSQL. It is intended to centralise student and staff records, academic activities, attendance, assignments, fees, library and laboratory operations, facilities, and student support workflows.
+
+**Current implementation:** the modular-monolith foundation includes database-backed login and user provisioning, role/permission checks for existing APIs, and a working Admin Student Management workflow. Faculty, student, librarian, attendance, assignment, fee, library, lab, forum, facilities, and audit workflows remain to be implemented as described in the status and roadmap sections above.

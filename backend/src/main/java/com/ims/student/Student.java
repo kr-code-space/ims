@@ -35,6 +35,9 @@ public class Student {
     @Column(nullable = false)
     private String className;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean active = true;
+
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
     private UserEntity user;
@@ -53,6 +56,8 @@ public class Student {
     public void setYear(String year) { this.year = year; }
     public String getClassName() { return className; }
     public void setClassName(String className) { this.className = className; }
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
     public UserEntity getUser() { return user; }
     public void setUser(UserEntity user) { this.user = user; }
 }
