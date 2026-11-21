@@ -123,35 +123,35 @@ export function LoginPage() {
         </form>
 
         <div className={styles.quickRoles}>
-          <div className={styles.quickRolesTitle}>Quick Fill Roles (Test Accounts)</div>
+          <div className={styles.quickRolesTitle}>Quick Fill Roles (Demo Accounts)</div>
           <div className={styles.roleButtons}>
             <button
               type="button"
               className={styles.roleBtn}
-              onClick={() => fillQuickRole('admin', 'replace-with-a-12-character-password')}
+              onClick={() => fillQuickRole('admin', 'PritamMahato1234')}
             >
-              Default Admin
+              Admin
             </button>
             <button
               type="button"
               className={styles.roleBtn}
-              onClick={() => fillQuickRole('admin', 'admin12345678')}
-            >
-              Admin Alt
-            </button>
-            <button
-              type="button"
-              className={styles.roleBtn}
-              onClick={() => fillQuickRole('faculty1', 'password12345')}
+              onClick={() => fillQuickRole('faculty', 'Faculty123456')}
             >
               Faculty
             </button>
             <button
               type="button"
               className={styles.roleBtn}
-              onClick={() => fillQuickRole('student1', 'password12345')}
+              onClick={() => fillQuickRole('student', 'Student123456')}
             >
               Student
+            </button>
+            <button
+              type="button"
+              className={styles.roleBtn}
+              onClick={() => fillQuickRole('librarian', 'Librarian1234')}
+            >
+              Librarian
             </button>
           </div>
         </div>

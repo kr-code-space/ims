@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Clock,
   Sparkles,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '../../auth/useAuth';
 import styles from '../../styles/Dashboard.module.css';
@@ -43,6 +44,17 @@ export function DashboardPage() {
     booksCount: 0,
     issuesCount: 0,
   });
+
+  const [adminData, setAdminData] = useState({
+    activeTerm: null,
+    departmentName: '',
+    activeStudents: 0,
+    totalBilled: 0,
+    totalPaid: 0,
+    totalOutstanding: 0,
+    recentAudit: [],
+  });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,24 +64,49 @@ export function DashboardPage() {
       setLoading(true);
       try {
         if (role === 'ADMIN') {
-          const [studentsRes, facultyRes, usersRes, academicRes, feesRes] = await Promise.allSettled([
+          const [studentsRes, facultyRes, usersRes, academicRes, feesRes, auditRes] = await Promise.allSettled([
             apiClient.get('/admin/students'),
             apiClient.get('/admin/faculty'),
             apiClient.get('/admin/users'),
             apiClient.get('/admin/academic'),
             apiClient.get('/admin/fees'),
+            apiClient.get('/admin/audit'),
           ]);
 
           if (!isCurrent) return;
+
+          const studentsData = studentsRes.status === 'fulfilled' && Array.isArray(studentsRes.value.data) ? studentsRes.value.data : [];
+          const facultyData = facultyRes.status === 'fulfilled' && Array.isArray(facultyRes.value.data) ? facultyRes.value.data : [];
+          const usersData = usersRes.status === 'fulfilled' && Array.isArray(usersRes.value.data) ? usersRes.value.data : [];
+          const academicData = academicRes.status === 'fulfilled' && academicRes.value.data ? academicRes.value.data : {};
+          const feesData = feesRes.status === 'fulfilled' && Array.isArray(feesRes.value.data) ? feesRes.value.data : [];
+          const auditData = auditRes.status === 'fulfilled' && Array.isArray(auditRes.value.data) ? auditRes.value.data : [];
+
+          const billed = feesData.reduce((sum, f) => sum + Number(f.amount || 0), 0);
+          const paid = feesData.reduce((sum, f) => sum + Number(f.paidAmount || 0), 0);
+
           setMetrics((prev) => ({
             ...prev,
-            studentsCount: studentsRes.status === 'fulfilled' ? studentsRes.value.data.length : 0,
-            facultyCount: facultyRes.status === 'fulfilled' ? facultyRes.value.data.length : 0,
-            usersCount: usersRes.status === 'fulfilled' ? usersRes.value.data.length : 0,
-            departmentsCount: academicRes.status === 'fulfilled' ? academicRes.value.data?.departments?.length || 0 : 0,
-            academicClasses: academicRes.status === 'fulfilled' ? academicRes.value.data?.classes?.length || 0 : 0,
-            feesCount: feesRes.status === 'fulfilled' ? feesRes.value.data.length : 0,
+            studentsCount: studentsData.length,
+            facultyCount: facultyData.length,
+            usersCount: usersData.length,
+            departmentsCount: academicData?.departments?.length || 0,
+            academicClasses: academicData?.classes?.length || 0,
+            feesCount: feesData.length,
           }));
+
+          const activeTerm = academicData?.terms?.find((t) => t.active) || (academicData?.terms?.length ? academicData.terms[0] : null);
+          const primaryDept = academicData?.departments?.length ? academicData.departments[0].name : '';
+
+          setAdminData({
+            activeTerm,
+            departmentName: primaryDept,
+            activeStudents: studentsData.filter((s) => s.active).length,
+            totalBilled: billed,
+            totalPaid: paid,
+            totalOutstanding: Math.max(0, billed - paid),
+            recentAudit: auditData.slice(0, 4),
+          });
         } else if (role === 'FACULTY') {
           const [offeringsRes, assignmentsRes, labRes] = await Promise.allSettled([
             apiClient.get('/faculty/attendance/offerings'),
@@ -258,58 +295,210 @@ export function DashboardPage() {
         })}
       </div>
 
-      {/* Main Section: Overview & Quick Operations */}
+      {/* Main Section: Institutional Overview & Quick Operations */}
       <div className={styles.sectionGrid}>
-        <div className={styles.contentCard}>
-          <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Institutional Overview</h2>
-            <span className="badge badge-success">PostgreSQL Sync</span>
-          </div>
+        {/* Role-tailored Institutional Center */}
+        {role === 'ADMIN' ? (
+          <div className={styles.contentCard}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>Campus at a Glance</h2>
+              <span className="badge badge-primary">
+                {adminData.activeTerm ? `${adminData.activeTerm.name} • Active` : 'Academic Session'}
+              </span>
+            </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.92rem' }}>
-              Welcome to the redesigned Institute Management System (IMS). All academic and administrative workflows
-              are connected to the live PostgreSQL Spring Boot backend. Use the quick action shortcuts or the sidebar navigation to manage operations.
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.92rem', margin: '0 0 16px' }}>
+              Welcome, Administrator. Here is your institutional operational summary across active academic sessions, student enrollments, and tuition fee realization.
             </p>
 
-            <div
-              style={{
-                backgroundColor: 'var(--bg-hover)',
-                borderRadius: 'var(--radius-md)',
-                padding: '16px 20px',
-                border: '1px solid var(--border-color)',
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '14px',
-              }}
-            >
-              <div>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
-                  Current Role Scope
-                </span>
-                <p style={{ fontWeight: 600, color: 'var(--text-primary)', margin: '4px 0 0', fontSize: '1rem' }}>
-                  {role} Portal
+            <div className={styles.glanceGrid}>
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Current Academic Session</span>
+                <p className={styles.glanceValue}>
+                  {adminData.activeTerm ? adminData.activeTerm.name : 'Semester Term'}
                 </p>
+                <span className={styles.glanceSubtext}>
+                  {adminData.departmentName || `${metrics.departmentsCount} Academic Department(s)`}
+                </span>
               </div>
-              <div>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
-                  Design System
-                </span>
-                <p style={{ fontWeight: 600, color: 'var(--text-primary)', margin: '4px 0 0', fontSize: '1rem' }}>
-                  Inter • Tokenized
+
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Student Enrollment</span>
+                <p className={styles.glanceValue}>
+                  {adminData.activeStudents} / {metrics.studentsCount} Active
                 </p>
+                <span className={styles.glanceSubtext}>
+                  {metrics.studentsCount > 0
+                    ? `${Math.round((adminData.activeStudents / metrics.studentsCount) * 100)}% active standing`
+                    : 'Enrolled students'}
+                </span>
               </div>
-              <div>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
-                  Backend Protocol
-                </span>
-                <p style={{ fontWeight: 600, color: 'var(--text-primary)', margin: '4px 0 0', fontSize: '1rem' }}>
-                  REST JSON v1
+
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Fee Collection Realization</span>
+                <p className={styles.glanceValue}>
+                  ₹{adminData.totalPaid.toFixed(2)}
                 </p>
+                <span className={styles.glanceSubtext}>
+                  {adminData.totalBilled > 0
+                    ? `${Math.round((adminData.totalPaid / adminData.totalBilled) * 100)}% collected`
+                    : 'Fees collected'}
+                  {adminData.totalOutstanding > 0 ? ` (₹${adminData.totalOutstanding.toFixed(2)} dues)` : ' (All clear)'}
+                </span>
+              </div>
+            </div>
+
+            {adminData.recentAudit.length > 0 ? (
+              <div style={{ marginTop: '20px' }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Recent System Activity
+                </div>
+                <div className={styles.activityList}>
+                  {adminData.recentAudit.map((item) => (
+                    <div key={item.id} className={styles.activityItem}>
+                      <div>
+                        <span className="badge badge-primary" style={{ marginRight: '8px' }}>{item.action}</span>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{item.details || item.entityType}</span>
+                      </div>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                        {item.occurredAt ? new Date(item.occurredAt).toLocaleDateString() : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className={styles.noticeBanner}>
+                <CheckCircle2 size={20} style={{ color: 'var(--success)', flexShrink: 0 }} />
+                <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+                  <strong style={{ color: 'var(--text-primary)' }}>Institutional operations normal.</strong> All campus departments, faculty allocations, and student authentication services are operational.
+                </div>
+              </div>
+            )}
+          </div>
+        ) : role === 'FACULTY' ? (
+          <div className={styles.contentCard}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>Teaching & Classroom Overview</h2>
+              <span className="badge badge-success">Faculty Portal</span>
+            </div>
+
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.92rem', margin: '0 0 16px' }}>
+              Welcome, Faculty Member. Access assigned course sections, record daily lecture attendance, and grade submitted coursework.
+            </p>
+
+            <div className={styles.glanceGrid}>
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Assigned Offerings</span>
+                <p className={styles.glanceValue}>{metrics.offeringsCount} Classes</p>
+                <span className={styles.glanceSubtext}>Active teaching sections</span>
+              </div>
+
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Coursework Tasks</span>
+                <p className={styles.glanceValue}>{metrics.assignmentsCount} Assignments</p>
+                <span className={styles.glanceSubtext}>Published to students</span>
+              </div>
+
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Laboratory Authority</span>
+                <p className={styles.glanceValue}>{metrics.labEquipmentCount > 0 ? 'Equipment Active' : 'Standard Access'}</p>
+                <span className={styles.glanceSubtext}>Laboratory supervision</span>
+              </div>
+            </div>
+
+            <div className={styles.noticeBanner}>
+              <CalendarCheck size={20} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+              <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Daily Attendance Reminder:</strong> Submit attendance records for all completed lecture periods to keep institutional compliance up to date.
               </div>
             </div>
           </div>
-        </div>
+        ) : role === 'STUDENT' ? (
+          <div className={styles.contentCard}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>Academic Standing & Coursework</h2>
+              <span className="badge badge-primary">Student Portal</span>
+            </div>
+
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.92rem', margin: '0 0 16px' }}>
+              Welcome, Student. Track your lecture attendance rate, turn in assignments, inspect outstanding dues, and consult the doubt forum.
+            </p>
+
+            <div className={styles.glanceGrid}>
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Attendance Rate</span>
+                <p className={styles.glanceValue} style={{ color: metrics.attendancePercent >= 75 ? 'var(--success)' : 'var(--warning)' }}>
+                  {metrics.attendancePercent}%
+                </p>
+                <span className={styles.glanceSubtext}>
+                  {metrics.attendancePercent >= 75 ? 'Eligible for examinations' : 'Attendance warning'}
+                </span>
+              </div>
+
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Active Tasks</span>
+                <p className={styles.glanceValue}>{metrics.studentAssignmentsCount} Coursework</p>
+                <span className={styles.glanceSubtext}>Assigned homework & labs</span>
+              </div>
+
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Semester Fees</span>
+                <p className={styles.glanceValue} style={{ color: metrics.studentFeesDue > 0 ? 'var(--warning)' : 'var(--success)' }}>
+                  ₹{metrics.studentFeesDue.toFixed(2)}
+                </p>
+                <span className={styles.glanceSubtext}>
+                  {metrics.studentFeesDue > 0 ? 'Pending dues balance' : 'All fees cleared'}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.noticeBanner}>
+              <GraduationCap size={20} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+              <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Examination Requirement:</strong> Maintain at least 75% aggregate attendance across all enrolled subjects to remain in good academic standing.
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.contentCard}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>Circulation Desk & Stock Overview</h2>
+              <span className="badge badge-primary">Library Desk</span>
+            </div>
+
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.92rem', margin: '0 0 16px' }}>
+              Welcome, Librarian. Manage the institutional book catalogue, inspect student borrowing requests, and record returned book issues.
+            </p>
+
+            <div className={styles.glanceGrid}>
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Catalogue Titles</span>
+                <p className={styles.glanceValue}>{metrics.booksCount} Titles</p>
+                <span className={styles.glanceSubtext}>Catalogued library holdings</span>
+              </div>
+
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Active Loans</span>
+                <p className={styles.glanceValue}>{metrics.issuesCount} Issues</p>
+                <span className={styles.glanceSubtext}>Current circulations</span>
+              </div>
+
+              <div className={styles.glanceCard}>
+                <span className={styles.glanceLabel}>Catalogue Sync</span>
+                <p className={styles.glanceValue}>Active</p>
+                <span className={styles.glanceSubtext}>PostgreSQL circulation desk</span>
+              </div>
+            </div>
+
+            <div className={styles.noticeBanner}>
+              <LibraryBig size={20} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+              <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Circulation Desk Active:</strong> Review active loan return dates and record new book issues in the Library module.
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Quick Operations Panel */}
         <div className={styles.contentCard}>
