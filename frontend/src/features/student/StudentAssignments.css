@@ -1,0 +1,32 @@
+.student-assignment {
+  display: grid;
+  gap: 16px;
+}
+
+.student-assignment-card {
+  display: grid;
+  gap: 12px;
+}
+
+.student-assignment-card h4 {
+  margin: 4px 0;
+}
+
+.student-assignment-card textarea {
+  min-height: 120px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.student-assignment-card .primary-button {
+  height: 44px;
+  margin: 0;
+}
+
+.submission-status {
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 10px 12px;
+}

@@ -5,6 +5,7 @@ import com.ims.user.CreatedUserResponse;
 import com.ims.user.ResetUserPasswordRequest;
 import com.ims.user.UpdateUserPermissionsRequest;
 import com.ims.user.UpdateUserStatusRequest;
+import com.ims.user.UserRole;
 import com.ims.user.UserProvisioningService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -66,5 +67,13 @@ public class AdminUserController {
             @Valid @RequestBody UpdateUserPermissionsRequest request
     ) {
         return userProvisioningService.updatePermissions(userId, request.permissions());
+    }
+
+    public record UpdateRoleRequest(UserRole role) {}
+
+    @PutMapping("/{userId}/role")
+    public CreatedUserResponse updateRole(@PathVariable Long userId,
+                                          @Valid @RequestBody UpdateRoleRequest request) {
+        return userProvisioningService.updateRole(userId, request.role());
     }
 }

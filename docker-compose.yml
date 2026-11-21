@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: imsdb
+      POSTGRES_USER: imsuser
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-imsdevpassword}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ims-postgres:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/imsdb
+      DB_USERNAME: imsuser
+      DB_PASSWORD: ${DB_PASSWORD:-imsdevpassword}
+      IMS_BOOTSTRAP_ADMIN_USERNAME: ${IMS_BOOTSTRAP_ADMIN_USERNAME:-admin}
+      IMS_BOOTSTRAP_ADMIN_PASSWORD: ${IMS_BOOTSTRAP_ADMIN_PASSWORD:-change-me-please}
+      IMS_BOOTSTRAP_ADMIN_FIRST_NAME: ${IMS_BOOTSTRAP_ADMIN_FIRST_NAME:-Initial}
+      IMS_BOOTSTRAP_ADMIN_LAST_NAME: ${IMS_BOOTSTRAP_ADMIN_LAST_NAME:-Administrator}
+      IMS_BOOTSTRAP_ADMIN_EMAIL: ${IMS_BOOTSTRAP_ADMIN_EMAIL:-admin@example.com}
+      IMS_CORS_ALLOWED_ORIGINS: ${IMS_CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080/api
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  ims-postgres:

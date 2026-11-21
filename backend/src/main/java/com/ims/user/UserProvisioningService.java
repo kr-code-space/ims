@@ -59,6 +59,19 @@ public class UserProvisioningService {
     }
 
     @Transactional
+    public CreatedUserResponse updateRole(Long userId, UserRole role) {
+        UserEntity user = findUser(userId);
+        if (role == null) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Role is required");
+        }
+        user.setRole(role);
+        if (role != UserRole.FACULTY) {
+            user.setPermissions(Set.of());
+        }
+        return CreatedUserResponse.from(userRepository.save(user));
+    }
+
+    @Transactional
     public CreatedUserResponse updateStatus(Long userId, boolean enabled, String currentUsername) {
         UserEntity user = findUser(userId);
         if (!enabled && user.getUsername().equals(currentUsername)) {

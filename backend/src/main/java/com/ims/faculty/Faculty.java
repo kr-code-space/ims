@@ -32,6 +32,9 @@ public class Faculty {
     @Column(nullable = false)
     private String designation;
 
+    @Column(nullable = false)
+    private boolean active = true;
+
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
     private UserEntity user;
@@ -48,6 +51,8 @@ public class Faculty {
     public void setDepartment(String department) { this.department = department; }
     public String getDesignation() { return designation; }
     public void setDesignation(String designation) { this.designation = designation; }
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
     public UserEntity getUser() { return user; }
     public void setUser(UserEntity user) { this.user = user; }
 }

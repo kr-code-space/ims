@@ -33,6 +33,9 @@ public class Submission {
     @Column(length = 2000)
     private String feedback;
 
+    @Column(length = 4000)
+    private String submittedText;
+
     @Column(nullable = false)
     private int marks;
 
@@ -49,6 +52,8 @@ public class Submission {
     public void setSubmittedAt(LocalDateTime submittedAt) { this.submittedAt = submittedAt; }
     public String getFeedback() { return feedback; }
     public void setFeedback(String feedback) { this.feedback = feedback; }
+    public String getSubmittedText() { return submittedText; }
+    public void setSubmittedText(String submittedText) { this.submittedText = submittedText; }
     public int getMarks() { return marks; }
     public void setMarks(int marks) { this.marks = marks; }
     public String getStatus() { return status; }

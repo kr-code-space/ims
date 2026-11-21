@@ -1,5 +1,6 @@
 package com.ims.attendance;
 
+import com.ims.academic.AcademicClass;
 import com.ims.academic.Subject;
 import com.ims.student.Student;
 import jakarta.persistence.Column;
@@ -28,6 +29,10 @@ public class AttendanceRecord {
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
 
+    @ManyToOne
+    @JoinColumn(name = "academic_class_id")
+    private AcademicClass academicClass;
+
     @Column(nullable = false)
     private LocalDate date;
 
@@ -43,6 +48,8 @@ public class AttendanceRecord {
     public void setStudent(Student student) { this.student = student; }
     public Subject getSubject() { return subject; }
     public void setSubject(Subject subject) { this.subject = subject; }
+    public AcademicClass getAcademicClass() { return academicClass; }
+    public void setAcademicClass(AcademicClass academicClass) { this.academicClass = academicClass; }
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
     public boolean isPresent() { return present; }

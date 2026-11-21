@@ -1,6 +1,6 @@
 # Institute Management System (IMS)
 
-> **Implementation status reviewed: 2026-11-16.** This document describes both the intended IMS scope and the current code. The role and module descriptions below are requirements, not a claim that those workflows are already implemented.
+> **Implementation status reviewed: 2026-11-21.** This document describes both the intended IMS scope and the current code. The role and module descriptions below are requirements, not a claim that those workflows are already implemented.
 
 ## Current Implementation Snapshot
 
@@ -9,6 +9,13 @@ The repository is a working full-stack starting point, not yet a complete Instit
 ### Working now
 
 - React/Vite frontend and Spring Boot backend can run locally against PostgreSQL.
+- Admins can maintain the academic foundation: departments, academic terms, classes, subjects, student enrolments, and subject offerings.
+- Admins can maintain database-backed faculty records, optional faculty login accounts, activation status, and `LAB_ACCESS`.
+- Faculty can record class-scoped attendance and create/evaluate assignments for assigned subject offerings.
+- Students can view subject-wise attendance and submit or update assignments.
+- Admin and student fee APIs support dues, partial/full payment recording, and student fee history.
+- Flyway migrations and Docker Compose configuration are available for local PostgreSQL startup.
+- Library, laboratory, facility, staff, forum, and audit database foundations and role-protected APIs are implemented.
 - Database-backed login uses Spring Security HTTP Basic and BCrypt password hashes.
 - An initial administrator can be seeded from environment variables.
 - Admins can view and create user accounts, enable/disable accounts, reset another user's password, and change faculty permissions through a database-backed API and screen.
@@ -21,8 +28,11 @@ The repository is a working full-stack starting point, not yet a complete Instit
 ### Not a complete implementation yet
 
 - The dashboards for Faculty, Student, and Librarian are informational placeholders. Other than the Admin Students and Users pages, there are no operational module screens.
-- Several academic records have JPA entities and repositories, but do not yet have working APIs, services, validation workflows, or frontend pages.
+- Faculty has working Attendance and Assignment screens; Students have working Attendance and Assignment screens.
+- Librarian dashboards remain informational placeholders until library workflows are implemented.
+- Academic foundation now has database-backed entities, admin APIs, and an admin frontend.
 - Library, forum, laboratory inventory, facilities, staff, and audit-log workflows have not been implemented.
+- Library, forum, laboratory, facility, staff, and audit database foundations and role-protected APIs are now present.
 - No production deployment configuration, database migration history, payment integration, or end-to-end UI/API tests are present.
 
 ### Current API surface
@@ -42,6 +52,21 @@ The repository is a working full-stack starting point, not yet a complete Instit
 | `POST /api/admin/students` | Admin-only student creation; may also create a linked student login. |
 | `PUT /api/admin/students/{id}` | Admin-only update of student record fields. |
 | `PUT /api/admin/students/{id}/status` | Admin-only activation/deactivation; also enables/disables its linked login. |
+| `GET /api/admin/faculty` | Admin-only faculty record list. |
+| `POST /api/admin/faculty` | Admin-only faculty creation; may create a linked faculty login. |
+| `PUT /api/admin/faculty/{id}` | Admin-only faculty record update. |
+| `PUT /api/admin/faculty/{id}/status` | Admin-only faculty activation/deactivation; also enables/disables its linked login. |
+| `GET /api/admin/fees` | Admin-only fee record list. |
+| `POST /api/admin/fees` | Admin-only fee assignment/creation. |
+| `PUT /api/admin/fees/{id}/payment` | Admin-only partial/full payment recording. |
+| `GET /api/student/fees` | Student-only view of their fee records. |
+| `GET /api/admin/academic` | Admin-only academic structure overview. |
+| `POST /api/admin/academic/departments` | Admin-only department creation. |
+| `POST /api/admin/academic/terms` | Admin-only academic term creation. |
+| `POST /api/admin/academic/classes` | Admin-only class creation with department, term, and optional CR. |
+| `POST /api/admin/academic/subjects` | Admin-only subject creation. |
+| `POST /api/admin/academic/enrolments` | Admin-only student-to-class enrolment. |
+| `POST /api/admin/academic/offerings` | Admin-only subject-to-class offering, with optional faculty assignment. |
 | `GET /api/faculty/overview`, `GET /api/student/overview`, `GET /api/librarian/overview` | Role-protected placeholder responses, not functional module data. |
 | `GET /api/faculty/lab-access` | Faculty with `LAB_ACCESS` only; still a placeholder with no laboratory records. |
 
@@ -72,7 +97,7 @@ Except for user provisioning and Student Management, these are data-model scaffo
 - The frontend keeps the authenticated API client in memory, not as a persistent token/session. Refreshing the page requires signing in again.
 - The frontend exposes the Admin Students and Users pages; other roles still see dashboard placeholders. A user whose password was reset must sign in again using the new password.
 - Local startup from the repository root: `.\apache-maven-3.9.11\bin\mvn.cmd -f backend\pom.xml spring-boot:run`; in `frontend`, use `npm run dev`. The Maven path is specific to machines with that local Maven folder; an installed Maven can be used instead.
-- Latest checks: `mvn -f backend/pom.xml test` passes (6 tests); frontend `npm run build` and `npm run lint` pass.
+- Latest checks: `mvn -f backend/pom.xml test` passes (10 tests); frontend `npm run build` and `npm run lint` pass.
 
 ### Recommended next work
 

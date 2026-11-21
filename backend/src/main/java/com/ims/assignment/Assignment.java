@@ -1,6 +1,7 @@
 package com.ims.assignment;
 
 import com.ims.academic.Subject;
+import com.ims.academic.AcademicClass;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,6 +30,10 @@ public class Assignment {
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
 
+    @ManyToOne
+    @JoinColumn(name = "academic_class_id")
+    private AcademicClass academicClass;
+
     @Column(nullable = false)
     private LocalDate dueDate;
 
@@ -43,6 +48,8 @@ public class Assignment {
     public void setDescription(String description) { this.description = description; }
     public Subject getSubject() { return subject; }
     public void setSubject(Subject subject) { this.subject = subject; }
+    public AcademicClass getAcademicClass() { return academicClass; }
+    public void setAcademicClass(AcademicClass academicClass) { this.academicClass = academicClass; }
     public LocalDate getDueDate() { return dueDate; }
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
     public int getMaxMarks() { return maxMarks; }

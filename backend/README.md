@@ -11,7 +11,5 @@ mvn spring-boot:run
 
 ## Demo accounts
 
-- admin / admin123
-- faculty / faculty123
-- student / student123
-- librarian / librarian123
+Demo credentials are not seeded automatically. Configure `IMS_BOOTSTRAP_ADMIN_*`
+environment variables and start PostgreSQL to create the initial administrator.

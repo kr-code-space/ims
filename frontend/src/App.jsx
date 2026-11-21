@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useNavigate, useParams } from '
 import axios from 'axios'
 import {
   ArrowRight,
+  BookOpenCheck,
   GraduationCap,
   LibraryBig,
   LogOut,
@@ -14,8 +15,21 @@ import {
 } from 'lucide-react'
 import './App.css'
 import UserManagement from './features/admin/UserManagement.jsx'
+import AcademicManagement from './features/admin/AcademicManagement.jsx'
+import FacultyManagement from './features/admin/FacultyManagement.jsx'
+import FacultyAttendance from './features/faculty/FacultyAttendance.jsx'
+import StudentAttendance from './features/student/StudentAttendance.jsx'
+import FacultyAssignments from './features/faculty/FacultyAssignments.jsx'
+import StudentAssignments from './features/student/StudentAssignments.jsx'
+import AdminFees from './features/admin/AdminFees.jsx'
+import StudentFees from './features/student/StudentFees.jsx'
+import StudentProfile from './features/student/StudentProfile.jsx'
+import LibrarianLibrary from './features/librarian/LibrarianLibrary.jsx'
+import FacultyLab from './features/faculty/FacultyLab.jsx'
+import StudentForum from './features/student/StudentForum.jsx'
+import AdminOperations from './features/admin/AdminOperations.jsx'
 
-const BASE_URL = 'http://localhost:8080/api'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 const ROLE_MAP = {
   ADMIN: { label: 'Admin', icon: ShieldCheck },
   FACULTY: { label: 'Faculty', icon: GraduationCap },
@@ -125,6 +139,96 @@ function App() {
               page="users"
             />
           }
+        />
+        <Route
+          path="/admin/academic"
+          element={
+            <ProtectedDashboard
+              session={session}
+              apiClient={apiClient}
+              onLogout={handleLogout}
+              roleOverride="ADMIN"
+              page="academic"
+            />
+          }
+        />
+        <Route
+          path="/admin/faculty"
+          element={
+            <ProtectedDashboard
+              session={session}
+              apiClient={apiClient}
+              onLogout={handleLogout}
+              roleOverride="ADMIN"
+              page="faculty"
+            />
+          }
+        />
+        <Route
+          path="/faculty/attendance"
+          element={
+            <ProtectedDashboard
+              session={session}
+              apiClient={apiClient}
+              onLogout={handleLogout}
+              roleOverride="FACULTY"
+              page="attendance"
+            />
+          }
+        />
+        <Route
+          path="/student/attendance"
+          element={
+            <ProtectedDashboard
+              session={session}
+              apiClient={apiClient}
+              onLogout={handleLogout}
+              roleOverride="STUDENT"
+              page="attendance"
+            />
+          }
+        />
+        <Route
+          path="/faculty/assignments"
+          element={
+            <ProtectedDashboard session={session} apiClient={apiClient} onLogout={handleLogout}
+              roleOverride="FACULTY" page="assignments" />
+          }
+        />
+        <Route
+          path="/student/assignments"
+          element={
+            <ProtectedDashboard session={session} apiClient={apiClient} onLogout={handleLogout}
+              roleOverride="STUDENT" page="assignments" />
+          }
+        />
+        <Route
+          path="/admin/fees"
+          element={<ProtectedDashboard session={session} apiClient={apiClient} onLogout={handleLogout} roleOverride="ADMIN" page="fees" />}
+        />
+        <Route
+          path="/student/fees"
+          element={<ProtectedDashboard session={session} apiClient={apiClient} onLogout={handleLogout} roleOverride="STUDENT" page="fees" />}
+        />
+        <Route
+          path="/student/profile"
+          element={<ProtectedDashboard session={session} apiClient={apiClient} onLogout={handleLogout} roleOverride="STUDENT" page="profile" />}
+        />
+        <Route
+          path="/librarian/library"
+          element={<ProtectedDashboard session={session} apiClient={apiClient} onLogout={handleLogout} roleOverride="LIBRARIAN" page="library" />}
+        />
+        <Route
+          path="/faculty/lab"
+          element={<ProtectedDashboard session={session} apiClient={apiClient} onLogout={handleLogout} roleOverride="FACULTY" page="lab" />}
+        />
+        <Route
+          path="/student/forum"
+          element={<ProtectedDashboard session={session} apiClient={apiClient} onLogout={handleLogout} roleOverride="STUDENT" page="forum" />}
+        />
+        <Route
+          path="/admin/operations"
+          element={<ProtectedDashboard session={session} apiClient={apiClient} onLogout={handleLogout} roleOverride="ADMIN" page="operations" />}
         />
         <Route
           path="/:role"
@@ -270,10 +374,71 @@ function ProtectedDashboard({ session, apiClient, onLogout, roleOverride, page }
                 <UserCog size={16} />
                 Users
               </button>
+              <button
+                type="button"
+                className={page === 'academic' ? 'nav-item active' : 'nav-item'}
+                onClick={() => navigate('/admin/academic')}
+              >
+                <BookOpenCheck size={16} />
+                Academic
+              </button>
+              <button
+                type="button"
+                className={page === 'faculty' ? 'nav-item active' : 'nav-item'}
+                onClick={() => navigate('/admin/faculty')}
+              >
+                <GraduationCap size={16} />
+                Faculty
+              </button>
+              <button
+                type="button"
+                className={page === 'fees' ? 'nav-item active' : 'nav-item'}
+                onClick={() => navigate('/admin/fees')}
+              >
+                <Pencil size={16} />
+                Fees
+              </button>
+              <button type="button" className={page === 'operations' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('/admin/operations')}>
+                <UserCog size={16} /> Operations
+              </button>
             </>
-          ) : (
-            <p className="sidebar-empty">Modules are being added.</p>
-          )}
+          ) : currentRole === 'FACULTY' ? (
+            <>
+              <button type="button" className={page === 'attendance' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('/faculty/attendance')}>
+                <BookOpenCheck size={16} /> Attendance
+              </button>
+              <button type="button" className={page === 'assignments' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('/faculty/assignments')}>
+                <Pencil size={16} /> Assignments
+              </button>
+              <button type="button" className={page === 'lab' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('/faculty/lab')}>
+                <ShieldCheck size={16} /> Lab
+              </button>
+            </>
+          ) : currentRole === 'STUDENT' ? (
+            <>
+              <button type="button" className={page === 'attendance' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('/student/attendance')}>
+                <BookOpenCheck size={16} /> Attendance
+              </button>
+              <button type="button" className={page === 'assignments' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('/student/assignments')}>
+                <Pencil size={16} /> Assignments
+              </button>
+              <button type="button" className={page === 'fees' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('/student/fees')}>
+                <Pencil size={16} /> Fees
+              </button>
+              <button type="button" className={page === 'profile' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('/student/profile')}>
+                <Users size={16} /> Profile
+              </button>
+              <button type="button" className={page === 'forum' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('/student/forum')}>
+                <Pencil size={16} /> Forum
+              </button>
+            </>
+          ) : currentRole === 'LIBRARIAN' ? (
+            <>
+              <button type="button" className={page === 'library' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('/librarian/library')}>
+                <LibraryBig size={16} /> Library
+              </button>
+            </>
+          ) : null}
         </nav>
 
         <button type="button" className="logout-button" onClick={() => { onLogout(); navigate('/'); }}>
@@ -291,7 +456,27 @@ function ProtectedDashboard({ session, apiClient, onLogout, roleOverride, page }
                 ? 'Student Management'
                 : page === 'users'
                   ? 'User Management'
-                  : dashboard.title}
+                  : page === 'academic'
+                    ? 'Academic Management'
+                    : page === 'faculty'
+                      ? 'Faculty Management'
+                        : page === 'attendance'
+                          ? 'Attendance'
+                          : page === 'assignments'
+                            ? 'Assignments'
+                                : page === 'fees'
+                                  ? 'Fee Management'
+                                  : page === 'profile'
+                                    ? 'Student Profile'
+                                    : page === 'library'
+                                      ? 'Library'
+                                      : page === 'lab'
+                                        ? 'Laboratory'
+                                        : page === 'forum'
+                                          ? 'Doubt Forum'
+                                          : page === 'operations'
+                                            ? 'Staff and Facilities'
+                                            : dashboard.title}
             </h2>
           </div>
           <div className="role-pill">
@@ -304,6 +489,32 @@ function ProtectedDashboard({ session, apiClient, onLogout, roleOverride, page }
           <StudentManagement apiClient={apiClient} />
         ) : page === 'users' ? (
           <UserManagement apiClient={apiClient} currentUsername={session.username} />
+        ) : page === 'academic' ? (
+          <AcademicManagement apiClient={apiClient} />
+        ) : page === 'faculty' ? (
+          <FacultyManagement apiClient={apiClient} />
+        ) : page === 'attendance' && currentRole === 'FACULTY' ? (
+          <FacultyAttendance apiClient={apiClient} />
+        ) : page === 'attendance' && currentRole === 'STUDENT' ? (
+          <StudentAttendance apiClient={apiClient} />
+        ) : page === 'assignments' && currentRole === 'FACULTY' ? (
+          <FacultyAssignments apiClient={apiClient} />
+        ) : page === 'assignments' && currentRole === 'STUDENT' ? (
+          <StudentAssignments apiClient={apiClient} />
+        ) : page === 'fees' && currentRole === 'ADMIN' ? (
+          <AdminFees apiClient={apiClient} />
+        ) : page === 'fees' && currentRole === 'STUDENT' ? (
+          <StudentFees apiClient={apiClient} />
+        ) : page === 'profile' && currentRole === 'STUDENT' ? (
+          <StudentProfile apiClient={apiClient} />
+        ) : page === 'library' && currentRole === 'LIBRARIAN' ? (
+          <LibrarianLibrary apiClient={apiClient} />
+        ) : page === 'lab' && currentRole === 'FACULTY' ? (
+          <FacultyLab apiClient={apiClient} />
+        ) : page === 'forum' && currentRole === 'STUDENT' ? (
+          <StudentForum apiClient={apiClient} />
+        ) : page === 'operations' && currentRole === 'ADMIN' ? (
+          <AdminOperations apiClient={apiClient} />
         ) : (
           <>
             <section className="hero-panel">
@@ -324,8 +535,10 @@ function ProtectedDashboard({ session, apiClient, onLogout, roleOverride, page }
                 <h3>Modules</h3>
                 <p>
                   {currentRole === 'ADMIN'
-                    ? 'Student Management is available. Other institute workflows are still being built.'
-                    : 'This dashboard is a starting point. Role-specific workflows are still being built.'}
+                    ? 'Academic, student, faculty, and fee APIs are available. Forum, library, laboratory, facilities, and audit workflows are still being built.'
+                    : currentRole === 'LIBRARIAN'
+                      ? 'The Librarian role is authenticated, but library workflows are still being built.'
+                      : 'Faculty and student operational screens are available for attendance and assignments; additional workflows are still being built.'}
                 </p>
               </article>
             </section>
