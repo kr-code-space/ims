@@ -64,21 +64,21 @@ export default function StudentFees({ apiClient: propClient }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px', marginBottom: '24px' }}>
         <StatCard
           label="Total Invoiced"
-          value={`$${stats.total.toFixed(2)}`}
+          value={`₹${stats.total.toFixed(2)}`}
           icon={Receipt}
           color="primary"
           subtext="All semester fees"
         />
         <StatCard
           label="Total Paid"
-          value={`$${stats.paid.toFixed(2)}`}
+          value={`₹${stats.paid.toFixed(2)}`}
           icon={CheckCircle2}
           color="success"
           subtext="Cleared payments"
         />
         <StatCard
           label="Outstanding Dues"
-          value={`$${stats.outstanding.toFixed(2)}`}
+          value={`₹${stats.outstanding.toFixed(2)}`}
           icon={AlertCircle}
           color={stats.outstanding > 0 ? 'warning' : 'success'}
           subtext={stats.outstanding > 0 ? 'Payment required' : 'All fees cleared'}
@@ -138,16 +138,16 @@ export default function StudentFees({ apiClient: propClient }) {
                         <span className={tableStyles.cellPrimary}>{fee.feeType}</span>
                       </td>
                       <td>
-                        <span className={tableStyles.cellPrimary}>${billed.toFixed(2)}</span>
+                        <span className={tableStyles.cellPrimary}>₹${billed.toFixed(2)}</span>
                       </td>
                       <td>
                         <span style={{ color: 'var(--success)', fontWeight: 600 }}>
-                          ${paid.toFixed(2)}
+                          ₹${paid.toFixed(2)}
                         </span>
                       </td>
                       <td>
                         <span style={{ color: balance > 0 ? 'var(--danger)' : 'var(--text-muted)', fontWeight: 600 }}>
-                          ${balance.toFixed(2)}
+                          ₹${balance.toFixed(2)}
                         </span>
                       </td>
                       <td>

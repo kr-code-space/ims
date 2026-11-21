@@ -184,7 +184,7 @@ export function DashboardPage() {
           kpis: [
             { label: 'Overall Attendance', value: loading ? '...' : `${metrics.attendancePercent}%`, icon: CalendarCheck, bg: 'var(--primary-light)', color: 'var(--primary)' },
             { label: 'Course Assignments', value: loading ? '...' : metrics.studentAssignmentsCount, icon: FileText, bg: 'var(--info-bg)', color: 'var(--info)' },
-            { label: 'Pending Fee Dues', value: loading ? '...' : `$${metrics.studentFeesDue.toFixed(2)}`, icon: CircleDollarSign, bg: 'var(--warning-bg)', color: 'var(--warning)' },
+            { label: 'Pending Fee Dues', value: loading ? '...' : `₹${metrics.studentFeesDue.toFixed(2)}`, icon: CircleDollarSign, bg: 'var(--warning-bg)', color: 'var(--warning)' },
             { label: 'Academic Standing', value: 'Good', icon: GraduationCap, bg: 'var(--success-bg)', color: 'var(--success)' },
           ],
           actions: [

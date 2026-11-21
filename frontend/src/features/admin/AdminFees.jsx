@@ -117,7 +117,7 @@ export default function AdminFees({ apiClient: propClient }) {
       await apiClient.put(`/admin/fees/${activePaymentFee.id}/payment`, {
         paidAmount: amount,
       });
-      showToast(`Payment of $${amount.toFixed(2)} recorded successfully.`, 'success');
+      showToast(`Payment of ₹${amount.toFixed(2)} recorded successfully.`, 'success');
       setPaymentAmounts((prev) => ({ ...prev, [activePaymentFee.id]: '' }));
       setActivePaymentFee(null);
       await loadData();
@@ -149,21 +149,21 @@ export default function AdminFees({ apiClient: propClient }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px', marginBottom: '24px' }}>
         <StatCard
           label="Total Invoiced"
-          value={`$${stats.totalBilled.toFixed(2)}`}
+          value={`₹${stats.totalBilled.toFixed(2)}`}
           icon={CircleDollarSign}
           color="primary"
           subtext="Total fees levied"
         />
         <StatCard
           label="Total Collected"
-          value={`$${stats.totalPaid.toFixed(2)}`}
+          value={`₹${stats.totalPaid.toFixed(2)}`}
           icon={CheckCircle2}
           color="success"
           subtext="Receipts recorded"
         />
         <StatCard
           label="Outstanding Dues"
-          value={`$${stats.outstanding.toFixed(2)}`}
+          value={`₹${stats.outstanding.toFixed(2)}`}
           icon={AlertCircle}
           color="warning"
           subtext="Pending student balance"
@@ -244,16 +244,16 @@ export default function AdminFees({ apiClient: propClient }) {
                       </td>
                       <td>{fee.feeType}</td>
                       <td>
-                        <span className={tableStyles.cellPrimary}>${billed.toFixed(2)}</span>
+                        <span className={tableStyles.cellPrimary}>₹${billed.toFixed(2)}</span>
                       </td>
                       <td>
                         <span style={{ color: 'var(--success)', fontWeight: 600 }}>
-                          ${paid.toFixed(2)}
+                          ₹${paid.toFixed(2)}
                         </span>
                       </td>
                       <td>
                         <span style={{ color: balance > 0 ? 'var(--danger)' : 'var(--text-muted)', fontWeight: 600 }}>
-                          ${balance.toFixed(2)}
+                          ₹${balance.toFixed(2)}
                         </span>
                       </td>
                       <td>{fee.dueDate}</td>
@@ -326,7 +326,7 @@ export default function AdminFees({ apiClient: propClient }) {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.86rem', fontWeight: 600 }}>Amount ($) *</label>
+              <label style={{ fontSize: '0.86rem', fontWeight: 600 }}>Amount (₹) *</label>
               <input
                 type="number"
                 min="0.01"
@@ -391,24 +391,24 @@ export default function AdminFees({ apiClient: propClient }) {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Total Invoiced:</span>
-                <span>${Number(activePaymentFee.amount).toFixed(2)}</span>
+                <span>₹${Number(activePaymentFee.amount).toFixed(2)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Already Paid:</span>
                 <span style={{ color: 'var(--success)', fontWeight: 600 }}>
-                  ${Number(activePaymentFee.paidAmount || 0).toFixed(2)}
+                  ₹${Number(activePaymentFee.paidAmount || 0).toFixed(2)}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '6px' }}>
                 <span style={{ fontWeight: 600 }}>Remaining Balance:</span>
                 <span style={{ color: 'var(--danger)', fontWeight: 700 }}>
-                  ${Math.max(0, Number(activePaymentFee.amount) - Number(activePaymentFee.paidAmount || 0)).toFixed(2)}
+                  ₹${Math.max(0, Number(activePaymentFee.amount) - Number(activePaymentFee.paidAmount || 0)).toFixed(2)}
                 </span>
               </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.86rem', fontWeight: 600 }}>Payment Amount ($) *</label>
+              <label style={{ fontSize: '0.86rem', fontWeight: 600 }}>Payment Amount (₹) *</label>
               <input
                 type="number"
                 min="0.01"
