@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { GraduationCap, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../../auth/useAuth';
+import { resolvePostLoginDestination } from '../../auth/navigation';
 import { useToast } from '../../components/useToast';
 import styles from '../../styles/Auth.module.css';
 
@@ -18,8 +19,7 @@ export function LoginPage() {
   const from = location.state?.from?.pathname;
 
   if (isAuthenticated && user) {
-    const role = (user.role || 'ADMIN').toLowerCase();
-    const destination = from && from !== '/login' ? from : `/${role}/dashboard`;
+    const destination = resolvePostLoginDestination(from, user.role);
     return <Navigate to={destination} replace />;
   }
 
@@ -36,8 +36,8 @@ export function LoginPage() {
     try {
       const session = await login(form);
       showToast(`Welcome back, ${session.username}!`, 'success');
-      const role = (session.primaryRole || 'ADMIN').toLowerCase();
-      const destination = from && from !== '/login' ? from : `/${role}/dashboard`;
+      const role = session.primaryRole || session.role || 'ADMIN';
+      const destination = resolvePostLoginDestination(from, role);
       navigate(destination, { replace: true });
     } catch (err) {
       const msg = err.message || 'Unable to sign in. Please verify your credentials.';

@@ -4,6 +4,7 @@ import { AuthProvider } from './auth/AuthProvider';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { RoleRoute } from './auth/RoleRoute';
 import { useAuth } from './auth/useAuth';
+import { ROLE_DASHBOARDS } from './auth/navigation';
 import { ToastProvider } from './components/ToastProvider';
 import { AppLayout } from './components/AppLayout';
 
@@ -41,8 +42,9 @@ function RootRedirect() {
   const { isAuthenticated, user, loading } = useAuth();
   if (loading) return null;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  const role = (user?.role || 'admin').toLowerCase();
-  return <Navigate to={`/${role}/dashboard`} replace />;
+  const role = (user?.role || 'ADMIN').toUpperCase();
+  const dashboardPath = ROLE_DASHBOARDS[role] || '/admin/dashboard';
+  return <Navigate to={dashboardPath} replace />;
 }
 
 export default function App() {

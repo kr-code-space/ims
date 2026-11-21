@@ -43,7 +43,11 @@ export function ProtectedRoute({ children }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Only record destination if it is not login, forbidden, or root
+    const isSpecialPath = ['/login', '/forbidden', '/'].includes(location.pathname);
+    const redirectState = isSpecialPath ? undefined : { from: location };
+
+    return <Navigate to="/login" state={redirectState} replace />;
   }
 
   return children;

@@ -34,7 +34,7 @@ export function Topbar({ onToggleMobile }) {
   const handleLogout = () => {
     setDropdownOpen(false);
     logout();
-    navigate('/');
+    navigate('/login', { replace: true, state: null });
   };
 
   const getRoleBadgeClass = (role) => {
